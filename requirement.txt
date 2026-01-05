@@ -1,0 +1,9 @@
+opencv-python
+mediapipe
+pygame
+flask
+flask-socketio
+eventlet
+requests
+numpy
+python-dotenv

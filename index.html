@@ -1,0 +1,47 @@
+<!-- server/templates/index.html -->
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Drowsiness Dashboard</title>
+  <script src="https://cdn.socket.io/4.6.1/socket.io.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <h1>Drowsiness Events (Live)</h1>
+  <div class="chart-wrap">
+    <canvas id="chart"></canvas>
+  </div>
+  <ul id="eventList"></ul>
+
+  <script>
+    const socket = io();
+    const ctx = document.getElementById('chart').getContext('2d');
+    const chart = new Chart(ctx, {
+      type: 'bar',
+      data: { labels: [], datasets: [{ label: 'Events', data: [], backgroundColor: '#ff4444' }] },
+      options: { responsive: true, scales: { y: { beginAtZero: true } } }
+    });
+
+    socket.on('connect', () => console.log('Connected to server'));
+
+    socket.on('new_event', (d) => {
+      const ts = new Date(d.ts).toLocaleTimeString();
+      const label = ts;
+      chart.data.labels.push(label);
+      chart.data.datasets[0].data.push(1);
+      if (chart.data.labels.length > 20) {
+        chart.data.labels.shift();
+        chart.data.datasets[0].data.shift();
+      }
+      chart.update();
+
+      const ul = document.getElementById('eventList');
+      const li = document.createElement('li');
+      li.textContent = `${ts} - ${d.type}`;
+      ul.prepend(li);
+    });
+  </script>
+</body>
+</html>
